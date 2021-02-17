@@ -1,0 +1,2 @@
+.nfs*
+slurm/slurm_cellranger_test.sh
