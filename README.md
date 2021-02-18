@@ -20,11 +20,13 @@ Program: Cellranger count
 
 Version: 0.1
 
-Usage: ./cellranger.sh -i <input directory> -r <reference trancriptome> -a <reference chromatome> -o <output location>[optional] -s <sequencing chemistry>[optional] -c <conda environment>[optional]-h <help>
+Usage: ./cellranger.sh -i <input RNA directory> -a <input ATAC directory> -r <reference trancriptome> -m <reference chromatome> -o <output location>[optional] -s <sequencing chemistry>[optional] -c <conda environment>[optional]-h <help>
 
-Options:
-        -i      Input: Path to directory containing all fastqs or file containing list of directories with fastqs, one directory per line [required]
-        -r      Reference transcriptome: Path to directory containing reference transcriptome [required]
+Options:   
+        -i      Input RNA: Path to directory containing all RNA fastqs [required]
+        -a      Input ATAC: Path to directory containing all ATAC fastqs [required]
+        -r      Reference transcriptome: Path to directory containing reference transcriptome for RNA [required]
+        -m      Reference chromatome: Path to directory containing reference transcriptome for ATAC [required]
         -o      Output directory: Path to location where output will be generated [default=/home/bq_efewings]
         -s      Sequencing chemistry: Sequencing chemistry used in assay (see cellranger count --chemistry options for details). Should be left on 'autodetect' mode (default) unless error occurs [default=auto]
         -c      Conda environment: Name of conda environment with Cellranger installed (unless it is available on path or from module) [default=module]
@@ -32,7 +34,7 @@ Options:
 ```
 ## Input
 
-The input `-i` is the path to a directory containing multiple fastqs
+The input `-i` and '-a' is the path to a directory containing multiple fastqs for RNA and ATAC data respectively
 
 
 Example input directory:
