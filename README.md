@@ -1,11 +1,11 @@
-# Single Cell RNAseq Toolkit
+# Single Cell RNAseq Toolkit - Kidney Biopsy Project
 
-### Wrappers for submission of cellranger counts and citeseq counts to qsub system
+### Wrappers for submission of cellranger counts and cellranger-atac counts to slurm a system
 
 ## Cellranger Counts Wrapper
 
 ## Requirements
-This wrapper requires the installation of Cellranger Counts.
+This wrapper requires the installation of cellranger and cellranger-atac
 On the BioQuant cluster, this is sourced from the bio/cellranger/3.0.2 module.
 It can also be accessed from a conda environment by setting the `-c` flag 
 
@@ -20,7 +20,7 @@ Program: Cellranger count
 
 Version: 0.1
 
-Usage: ./cellranger.sh -i <input file or directory> -r <reference trancriptome> -o <output location>[optional] -s <sequencing chemistry>[optional] -c <conda environment>[optional] -h <help>
+Usage: ./cellranger.sh -i <input directory> -r <reference trancriptome> -a <reference chromatome> -o <output location>[optional] -s <sequencing chemistry>[optional] -c <conda environment>[optional]-h <help>
 
 Options:
         -i      Input: Path to directory containing all fastqs or file containing list of directories with fastqs, one directory per line [required]
@@ -32,20 +32,9 @@ Options:
 ```
 ## Input
 
-The input `-i` can be either the path to one directory containing multiple fastqs, or the path to a text file containing a list of directories that contain fastqs for individual samples. When supplying a file containing a list of fastq-containing directories, it is assumed that the directory name is the name of the sample to be analysed. 
+The input `-i` is the path to a directory containing multiple fastqs
 
-Example input file:
-```
-$head input.txt
-/home/directory/sample1
-/home/directory/sample2
-/home/directory/sample3
 
-$ ls /home/directory/sample1
-sample1_S1_L001_R1_001.fastq.gz sample1_S1_L001_R2_001.fastq.gz
-sample1_S1_L002_R1_001.fastq.gz sample1_S1_L002_R2_001.fastq.gz
-
-```
 Example input directory:
 ```
 $ ls /home/directory/input
@@ -61,6 +50,10 @@ sample3_S3_L002_R1_001.fastq.gz sample3_S3_L002_R2_001.fastq.gz
 A reference transcriptome is required for alignment. [Prebuilt references](https://support.10xgenomics.com/single-cell-gene-expression/software/downloads/latest) for human (GRCh38) and mouse (mm10) are supplied by Cell Ranger.
 
 You can also follow [instructions](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/tutorial_mr) to make your own reference.
+
+A reference chromatome is required for the ATAC processing. [Prebuilt references](https://support.10xgenomics.com/single-cell-atac/software/downloads/latest) for human (GRCh38) and mouse (mm10) are supplied by Cell Ranger.
+
+You can also follow [instructions](https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/advanced/references) to make your own reference.
 
 ## Sequencing Chemistry
 
@@ -80,8 +73,11 @@ As default, Cell Ranger automatically detects assay configuration. However there
 
 You can set an output directory with the `-o` option, by default data will be stored in your $HOME directory.
 
-### Output files 
+For each sample, an RNA and ATAC directory will be generated
+
+### RNA Output files
 ### [From Cell Ranger guide](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/count)
+
 
 ```
 Outputs:
@@ -101,129 +97,30 @@ Outputs:
 - Target Panel File:                        null
 
 ```
-A successful `cellranger count` run should conclude with a message similar to this (this will be found in the log file written in the output directory):
-```
-Waiting 6 seconds for UI to do final refresh.
-Pipestance completed successfully!
 
+### ATAC Output files
+### [From Cell Ranger guide](https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/using/count)
 
-yyyy-mm-dd hh:mm:ss Shutting down.
-Saving pipestance info to "tiny/tiny.mri.tgz"
-```
-The output of the pipeline will be contained in the output directory specified above. There will be a subfolder named with the samples you specified and the date they were run (e.g. sample1_20200101, sample2_20200101). Each subfolder will contain an `outs` directory containing the main pipeline output files:
-
-| File Name        | Description           |
-| ------------- |-------------|
-| web_summary.html | Run summary metrics and charts in HTML format |
-| metrics_summary.csv | Run summary metrics in CSV format |
-| possorted_genome_bam.bam | Reads aligned to the genome and transcriptome annotated with barcode information |
-| possorted_genome_bam.bam.bai | Index for possorted_genome_bam.bam |
-| filtered_feature_bc_matrix | Filtered feature-barcode matrices containing only cellular barcodes in MEX format. (In Targeted Gene Expression samples, the non-targeted genes are not present.) |
-| filtered_feature_bc_matrix_h5.h5 | Filtered feature-barcode matrices containing only cellular barcodes in HDF5 format. (In Targeted Gene Expression samples, the non-targeted genes are not present.) |
-| raw_feature_bc_matrices | Unfiltered feature-barcode matrices containing all barcodes in MEX format |
-| raw_feature_bc_matrix_h5.h5 | Unfiltered feature-barcode matrices containing all barcodes in HDF5 format |
-| analysis | Secondary analysis data including dimensionality reduction, cell clustering, and differential expression |
-| molecule_info.h5 | Molecule-level information used by cellranger aggr to aggregate samples into larger datasets |
-| cloupe.cloupe | Loupe Browser visualization and analysis file |
-| feature_reference.csv | (Feature Barcode only) Feature Reference CSV file |
-| target_panel.csv | (Targeted GEX only) Targed panel CSV file |
-
-## CITE-seq-counts Wrapper
-
-## Requirements
-This wrapper requires the installation of CITE-seq-counts.
-You can install this to an environment as follows:
-```
-conda activate citeseqenv
-pip install CITE-seq-Count==1.4.3
-```
-This installation can then be accessed from a conda environment by setting the `-c` flag 
-## Usage
-
-This wrapper was written with the intention of being used on the University of Heidelberg BioQuant cluster
-```
-Program: CITE-seq-Count
-
-Version: 0.1
-
-Usage: ./citeseq.sh -i <input file or directory> -o <output location>[optional] -t <hashtag oligos> -c <conda environment>[optional] -h <help>
-
-Options:
-        -i      Input: Path to directory containing all fastqs or file containing list of directories with fastqs, one directory per line [required]
-        -o      Output directory: Path to location where output will be generated [default=HOME]
-        -t      Path to csv containing hashtag antibody barcodes and respective names [required]
-        -c      Conda environment: Name of conda environment with CITE-seq-Count installed (unless it is available on path) [default=PATH]
-        -h      Help: Does what it says on the tin
-```
-## Input
-
-The input `-i` can be either the path to one directory containing multiple hashtag fastqs, or the path to a text file containing a list of directories that contain fastqs for individual samples. When supplying a file containing a list of fastq-containing directories, it is assumed that the directory name is the name of the sample to be analysed. 
-
-Example input file:
-```
-$head input.txt
-/home/directory/sample1_HT
-/home/directory/sample2_HT
-/home/directory/sample3_HT
-
-$ ls /home/directory/sample1
-sample1_HT_S1_L001_R1_001.fastq.gz sample1_S1_L001_R2_001.fastq.gz
-sample1_HT_S1_L002_R1_001.fastq.gz sample1_S1_L002_R2_001.fastq.gz
 
 ```
-Example input directory:
-```
-$ ls /home/directory/input
-sample1_HT_S1_L001_R1_001.fastq.gz sample1_HT_S1_L001_R2_001.fastq.gz
-sample1_HT_S1_L002_R1_001.fastq.gz sample1_HT_S1_L002_R2_001.fastq.gz
-sample2_HT_S2_L001_R1_001.fastq.gz sample2_HT_S2_L001_R2_001.fastq.gz
-sample2_HT_S2_L002_R1_001.fastq.gz sample2_HT_S2_L002_R2_001.fastq.gz
-sample3_HT_S3_L001_R1_001.fastq.gz sample3_HT_S3_L001_R2_001.fastq.gz
-sample3_HT_S3_L002_R1_001.fastq.gz sample3_HT_S3_L002_R2_001.fastq.gz
-```
-## Hashtag Oligos
-A comma separated file containing antibody barcodes and associated label names.
-Example oligos file:
-```
-TTCCTGCCATTACTA,A0451
-CCGTACCTCATTGTT,A0452
-GGTAGATGTCCTCAG,A0453
-TGGTGTCATTCTTGA,A0454
-ATGATGAACAGCCAG,A0455
-```
-## Output
-
-You can set an output directory with the `-o` option, by default data will be stored in your $HOME directory.
-
-The output directory will contain a further directory (per sample) with output files
-
-### Output files 
-### [From CITE-seq-Count Documentation](https://hoohm.github.io/CITE-seq-Count/)
-
-```
-OUTFOLDER/
--- umi_count/
--- -- matrix.mtx.gz
--- -- features.tsv.gz
--- -- barcodes.tsv.gz
--- read_count/
--- -- matrix.mtx.gz
--- -- features.tsv.gz
--- -- barcodes.tsv.gz
--- unmapped.csv
--- run_report.yaml
+Outputs:
+- Per-barcode fragment counts & metrics:        /opt/sample345/outs/singlecell.csv
+- Position sorted BAM file:                     /opt/sample345/outs/possorted_bam.bam
+- Position sorted BAM index:                    /opt/sample345/outs/possorted_bam.bam.bai
+- Summary of all data metrics:                  /opt/sample345/outs/summary.json
+- HTML file summarizing data & analysis:        /opt/sample345/outs/web_summary.html
+- Bed file of all called peak locations:        /opt/sample345/outs/peaks.bed
+- Raw peak barcode matrix in hdf5 format:       /opt/sample345/outs/raw_peak_bc_matrix.h5
+- Raw peak barcode matrix in mex format:        /opt/sample345/outs/raw_peak_bc_matrix
+- Directory of analysis files:                  /opt/sample345/outs/analysis
+- Filtered peak barcode matrix in hdf5 format:  /opt/sample345/outs/filtered_peak_bc_matrix.h5
+- Filtered peak barcode matrix:                 /opt/sample345/outs/filtered_peak_bc_matrix
+- Barcoded and aligned fragment file:           /opt/sample345/outs/fragments.tsv.gz
+- Fragment file index:                          /opt/sample345/outs/fragments.tsv.gz.tbi
+- Filtered tf barcode matrix in hdf5 format:    /opt/sample345/outs/filtered_tf_bc_matrix.h5
+- Filtered tf barcode matrix in mex format:     /opt/sample345/outs/filtered_tf_bc_matrix
+- Loupe Cell Browser input file:                /opt/sample345/outs/cloupe.cloupe
+- csv summarizing important metrics and values: /opt/sample345/outs/summary.csv
+ 
 ```
 
-Directories `read_count` and `umi_count` contain respectively the read counts and the collapsed umi counts. 
-
-For analysis you should use the umi data. 
-
-The read_count can be used to check if you have an overamplification or oversequencing issue with your protocol.
-
-| File Name        | Description           |
-| ------------- |-------------|
-| features.tsv.gz | Contains the feature names, in this context our tags. |
-| barcodes.tsv.gz | Contains the cell barcodes. |
-| matrix.mtx.gz | Contains the actual values |
-| unmapped.csv | Contains the top N tags that haven't been mapped. |
-| run_report.yaml | Contains the parameters used for the run as well as some statistics. |

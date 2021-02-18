@@ -2,7 +2,7 @@
 ## Run count function of cell ranger align, process and quantify scRNAseq data. Takes one directory containing all fastqs or file containing list of directories with fastqs, one directory per line. Output location is optional. If not supplied, output will be stored in home directory.
 ## Caveat: If list of directories is supplied, it is assumed that each directory is a sample. If necassary, the directory name is used as a sample name for renaming purposes
 ## For easy usage, submit job with ./cellranger.sh script
-## Usage: sbatch --export=sample=${sample},ref=${ref},outdir=${outdir}[optional],tmp_dir=${tmp_dir},log=${log},chem=${chem}[optional] ./slurm_cellranger_count.sh
+## Usage: sbatch --export=sample=${sample},ref=${refr},outdir=${outdir}[optional],tmp_dir=${tmp_dir},log=${log},chem=${chem},conda=${conda} ./slurm_cellranger_count.sh
 
 # Job Name
 #SBATCH --job-name=cellranger_count.$sample
@@ -41,7 +41,6 @@ echo "" >> ${slog}
 # Removed version printing as it is done automatically by cellranger
 #echo "$(cellranger count --version)" >> ${slog}
 #echo "" >> ${slog}
-#cellranger count --id="${sample}_$(date +%Y%m%d)" \
 
 # Change to output directory
 cd ${outdir}
@@ -49,14 +48,14 @@ cd ${outdir}
 # Run cell ranger per sample
 echo "  Running Cell Ranger on: ${sample}" >> ${slog}
 
-cellranger count --id="${sample}_20210129" \
+cellranger count --id="${sample}_RNA" \
                  --transcriptome=${ref} \
                  --fastqs=${tmp_dir} \
                  --sample=${sample} \
-                 --expect-cells=1000 \
+                 --expect-cells=3000 \
                  --chemistry=${chem} \
                  --jobmode=local \
-                 --localcores=1 \
+                 --localcores=8 \
                  --localmem=57 &>> ${slog}
 
 echo "Cell ranger complete: $(date +%T)" >> ${slog}
