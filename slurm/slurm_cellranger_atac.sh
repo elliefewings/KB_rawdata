@@ -1,6 +1,5 @@
 #!/bin/bash
-## Run count function of cell ranger align, process and quantify scATACseq data. Takes one directory containing all fastqs or file containing list of directories with fastqs, one directory per line. Output location is optional. If not supplied, output will be stored in home directory.
-## Caveat: If list of directories is supplied, it is assumed that each directory is a sample. If necassary, the directory name is used as a sample name for renaming purposes
+## Run count function of cell ranger align, process and quantify scATACseq data. Takes one directory containing all fastqs. Output location is optional. If not supplied, output will be stored in home directory.
 ## For easy usage, submit job with ./cellranger.sh script
 ## Usage: sbatch --export=sample=${sample},ref=${ref},outdir=${outdir}[optional],tmp_dir=${tmp_dir},log=${log},conda=${conda} ./slurm_cellranger_atac.sh
 
