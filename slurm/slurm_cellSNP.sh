@@ -1,7 +1,7 @@
 #!/bin/bash
 ## Run pileup over the expressed alleles in single-cell or bulk RNA-seq data, which can be directly used for donor deconvolution in multiplexed single-cell RNA-seq data
 ## For easy usage, submit job with ./cellranger.sh script
-## Usage: sbatch --export=sample=${sample},vcf=${vcf},outdir=${outdir},tmp_dir=${tmp_dir},conda=${conda} ./slurm_cellSNP.sh
+## Usage: sbatch --export=sample=${sample},vcf=${vcf},outdir=${outdir},conda=${conda} ./slurm_cellSNP.sh
 
 # Job Name
 #SBATCH --job-name=cellSNP.$sample
@@ -26,10 +26,10 @@ slog="${outdir}/${sample}/logs/${sample}_cellSNP.slog"
 outsamp="${outdir}/${sample}/${sample}_cellSNP"
 
 #Find bam from RNA
-bam="${outdir}/${sample}_RNA/outs/possorted_genome_bam.bam"
+bam="${outdir}/${sample}/${sample}_RNA/outs/possorted_genome_bam.bam"
 
 #Find barcode from RNA
-barcode="${outdir}/${sample}_RNA/outs/filtered_feature_bc_matrix/barcodes.tsv.gz"
+barcode="${outdir}/${sample}/${sample}_RNA/outs/filtered_feature_bc_matrix/barcodes.tsv.gz"
 
 #############
 ## CellSNP ##

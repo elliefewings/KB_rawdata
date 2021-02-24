@@ -4,7 +4,7 @@
 # Ellie Fewings, 22Jul2020
 
 # Running:
-# ./cellranger.sh -i <input RNA directory> -a <input ATAC directory> -v <input VCF directory> -r <reference trancriptome> -m <reference chromatome> -o <output location>[optional] -s <sequencing chemistry>[optional] -c <conda environment>[optional] -h <help>
+# ./cellranger.sh -i <input RNA directory> -a <input ATAC directory> -r <reference trancriptome> -m <reference chromatome> -o <output location>[optional] -s <sequencing chemistry>[optional] -c <conda environment>[optional] -h <help>
 
 # Source bashrc
 source ~/.bashrc
@@ -30,12 +30,11 @@ helpFunction()
   echo ""
   echo "Version: 0.1"
   echo ""
-  echo "Usage: ./cellranger.sh -i <input RNA directory> -a <input ATAC directory> -v <input VCF directory> -r <reference trancriptome> -m <reference chromatome> -o <output location>[optional] -s <sequencing chemistry>[optional] -c <conda environment>[optional] -h <help>"
+  echo "Usage: ./cellranger.sh -i <input RNA directory> -a <input ATAC directory> -r <reference trancriptome> -m <reference chromatome> -o <output location>[optional] -s <sequencing chemistry>[optional] -c <conda environment>[optional] -h <help>"
   echo ""
   echo "Options:"
       echo -e "\t-i\tInput RNA: Path to directory containing all RNA fastqs [required]"
       echo -e "\t-a\tInput ATAC: Path to directory containing all ATAC fastqs [required]"
-	  echo -e "\t-v\tInput VCF: Path to directory containing all VCFs [required]"
       echo -e "\t-r\tReference transcriptome: Path to directory containing reference transcriptome for RNA [required]"
       echo -e "\t-m\tReference chromatome: Path to directory containing reference transcriptome for ATAC [required]"
       echo -e "\t-o\tOutput directory: Path to location where output will be generated [default=$HOME]"
@@ -50,13 +49,11 @@ chem="auto"
 output="$HOME"
 
 # Accept arguments specified by user
-while getopts "i:a:v:r:m:o:s:c:h" opt; do
+while getopts "i:a:r:m:o:s:c:h" opt; do
   case $opt in
     i ) input="$OPTARG"
     ;;
     a ) inputatac="$OPTARG"
-    ;;
-	v ) vcf="$OPTARG"
     ;;
     r ) refr="$OPTARG"
     ;;
@@ -76,14 +73,14 @@ while getopts "i:a:v:r:m:o:s:c:h" opt; do
 done
 
 # Check minimum number of arguments
-if [ $# -lt 5 ]; then
+if [ $# -lt 4 ]; then
   echo "Not enough arguments"
   helpFunction
   abort
 fi
 
 # If bam or intervals are missing report help function
-if [[ "${input}" == "" || "${inputatac}" == "" || "${vcf}" == "" || "${refr}" == "" || "${refa}" == ""  ]]; then
+if [[ "${input}" == "" || "${inputatac}" == "" || "${refr}" == "" || "${refa}" == ""  ]]; then
   echo "Incorrect arguments."
   echo "Input and references are required."
   helpFunction
@@ -91,7 +88,6 @@ if [[ "${input}" == "" || "${inputatac}" == "" || "${vcf}" == "" || "${refr}" ==
 else
   input=$(realpath "${input}")
   inputatac=$(realpath "${inputatac}")
-  vcf=$(realpath "${vcf}")
   refr=$(realpath "${refr}")
   refa=$(realpath "${refa}")
 fi
@@ -125,7 +121,6 @@ echo "User: ${USER}" >> ${log}
 echo "Log: ${log}" >> ${log}
 echo "Input RNA: ${input}" >> ${log}
 echo "Input ATAC: ${inputatac}" >> ${log}
-echo "Input VCF: ${vcf}" >> ${log}
 echo "Reference trancriptome: ${refr}" >> ${log}
 echo "Reference chromatome: ${refa}" >> ${log}
 echo "Sequencing chemistry: ${chem}" >> ${log}
@@ -143,10 +138,9 @@ echo "-------" >> ${log}
 echo "" >> ${log}
 
 # Check if input is directory
-if [[ -d ${input} && -d ${inputatac} && -d ${vcf} ]] ; then
+if [[ -d ${input} && -d ${inputatac} ]] ; then
     nfq=$(ls -1 ${input}/*fastq.gz | wc -l)
     nfqa=$(ls -1 ${inputatac}/*fastq.gz | wc -l)
-	nvcf=$(ls -1 ${vcf}/*vcf | wc -l)
     # Check if RNA directory contains fastqs
     if [ ${nfq} -gt 0 ] ; then 
       echo "Input RNA directory contains ${nfq} fastq files" >> ${log}
@@ -154,18 +148,11 @@ if [[ -d ${input} && -d ${inputatac} && -d ${vcf} ]] ; then
       echo "ERROR: Input RNA directory contains no fastq files" >> ${log}
       exit 1
     fi
-    # Check if directory contains fastqs
+        # Check if directory contains fastqs
     if [ ${nfqa} -gt 0 ] ; then 
       echo "Input ATAC directory contains ${nfqa} fastq files" >> ${log}
     else 
       echo "ERROR: Input ATAC directory contains no fastq files" >> ${log}
-      exit 1
-    fi
-	# Check if directory contains VCFs
-    if [ ${nvcf} -gt 0 ] ; then 
-      echo "Input VCF directory contains ${nvcf} VCF files" >> ${log}
-    else 
-      echo "ERROR: Input VCF directory contains no VCF files" >> ${log}
       exit 1
     fi
 # Check if input is file
@@ -257,11 +244,9 @@ loc="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 while read sample ; do
   #Make sample output/log directory
   mkdir -p "${outdir}/${sample}/logs"
-  #Find sample vcf
-  svcf=$(ls ${vcf}/${sample}*.vcf)
   #Submit job
   echo "Submitting RNA job to cluster: ${sample}" >> ${log}
-  sbatch --export=sample=${sample},ref=${refr},outdir=${outdir},input=${input},log=${log},chem=${chem},conda=${conda},vcf=${svcf} "${loc}/slurm/slurm_cellranger_count.sh"
+  sbatch --export=sample=${sample},ref=${refr},outdir=${outdir},input=${input},log=${log},chem=${chem},conda=${conda} "${loc}/slurm/slurm_cellranger_count.sh"
 done < ${sfile}
 
 #Submit ATAC

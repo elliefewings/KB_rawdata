@@ -23,7 +23,7 @@ fi
 slog="${outdir}/${sample}/logs/${sample}_velocyto.slog"
 
 #Find bam from RNA
-input="${outdir}/${sample}_RNA"
+input="${outdir}/${sample}/${sample}_RNA"
 
 ##############
 ## velocyto ##

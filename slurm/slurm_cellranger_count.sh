@@ -1,7 +1,7 @@
 #!/bin/bash
 ## Run count function of cell ranger align, process and quantify scRNAseq data. Takes one directory containing all fastqs. Output location is optional. If not supplied, output will be stored in home directory.
 ## For easy usage, submit job with ./cellranger.sh script
-## Usage: sbatch --export=sample=${sample},ref=${refr},outdir=${outdir}[optional],input=${input},log=${log},chem=${chem},conda=${conda} ./slurm_cellranger_count.sh
+## Usage: sbatch --export=sample=${sample},ref=${refr},outdir=${outdir}[optional],input=${input},log=${log},chem=${chem},conda=${conda},vcf=${svcf} ./slurm_cellranger_count.sh
 
 # Job Name
 #SBATCH --job-name=cellranger_count.$sample
@@ -58,3 +58,19 @@ cellranger count --id="${sample}_RNA" \
                  --localmem=57 &>> ${slog}
 
 echo "Cell ranger complete: $(date +%T)" >> ${slog}
+
+#############
+## CellSNP ##
+#############
+
+# Find script location
+loc="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+#Submit cellsnp when finished
+sbatch --export=sample=${sample},vcf=${vcf},outdir=${outdir},conda=${conda} "${loc}/slurm_cellSNP.sh"
+
+##############
+## Velocyto ##
+##############
+
+sbatch --export=sample=${sample},ref=${ref},outdir=${outdir},conda=${conda} "${loc}/slurm_velocyto.sh"
