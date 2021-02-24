@@ -1,7 +1,7 @@
 #!/bin/bash
 ## Run count function of cell ranger align, process and quantify scATACseq data. Takes one directory containing all fastqs. Output location is optional. If not supplied, output will be stored in home directory.
 ## For easy usage, submit job with ./cellranger.sh script
-## Usage: sbatch --export=sample=${sample},ref=${ref},outdir=${outdir}[optional],tmp_dir=${tmp_dir},log=${log},conda=${conda} ./slurm_cellranger_atac.sh
+## Usage: sbatch --export=sample=${sample},ref=${ref},outdir=${outdir}[optional],inputatac=${inputatac},log=${log},conda=${conda} ./slurm_cellranger_atac.sh
 
 # Job Name
 #SBATCH --job-name=cellranger_count.$sample
@@ -23,7 +23,7 @@ if [[ ! -z ${conda}  ]]; then
 fi
 
 # Create sample slog
-slog="${tmp_dir}/${sample}_cellranger_atac.slog"
+slog="${outdir}/${sample}/logs/${sample}_cellranger_atac.slog"
 
 #################
 ## Cell Ranger ##
@@ -42,14 +42,14 @@ echo "" >> ${slog}
 #echo "" >> ${slog}
 
 # Change to output directory
-cd ${outdir}
+cd ${outdir}/${sample}
 
 # Run cell ranger per sample
 echo "  Running Cell Ranger ATAC on: ${sample}" >> ${slog}
 
 cellranger-atac count --id="${sample}_ATAC" \
                  --reference=${ref} \
-                 --fastqs=${tmp_dir} \
+                 --fastqs=${inputatac} \
                  --sample=${sample} \
                  --jobmode=local \
                  --localcores=8 \

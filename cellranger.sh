@@ -242,14 +242,20 @@ loc="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 #Submit RNA
 while read sample ; do
+  #Make sample output/log directory
+  mkdir -p "${outdir}/${sample}/logs"
+  #Submit job
   echo "Submitting RNA job to cluster: ${sample}" >> ${log}
-  sbatch --export=sample=${sample},ref=${refr},outdir=${outdir},tmp_dir=${tmp_dir},log=${log},chem=${chem},conda=${conda} "${loc}/slurm/slurm_cellranger_count.sh"
+  sbatch --export=sample=${sample},ref=${refr},outdir=${outdir},input=${input},log=${log},chem=${chem},conda=${conda} "${loc}/slurm/slurm_cellranger_count.sh"
 done < ${sfile}
 
 #Submit ATAC
 while read sample ; do
+  #Make sample output directory
+  mkdir -p "${outdir}/${sample}/logs"
+  #Submit job
   echo "Submitting ATAC job to cluster: ${sample}" >> ${log}
-  sbatch --export=sample=${sample},ref=${refa},outdir=${outdir},tmp_dir=${tmp_dir},log=${log},conda=${conda} "${loc}/slurm/slurm_cellranger_atac.sh"
+  sbatch --export=sample=${sample},ref=${refa},outdir=${outdir},inputatac=${inputatac},log=${log},conda=${conda} "${loc}/slurm/slurm_cellranger_atac.sh"
 done < ${sfileatac}
 
 

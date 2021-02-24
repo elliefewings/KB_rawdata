@@ -20,10 +20,10 @@ if [[ ! -z ${conda}  ]]; then
 fi
 
 # Create sample slog
-slog="${tmp_dir}/${sample}_cellSNP.slog"
+slog="${outdir}/${sample}/logs/${sample}_cellSNP.slog"
 
 #Create new outdir
-outsamp="${outdir}/${sample}_cellSNP"
+outsamp="${outdir}/${sample}/${sample}_cellSNP"
 
 #Find bam from RNA
 bam="${outdir}/${sample}_RNA/outs/possorted_genome_bam.bam"
@@ -45,9 +45,9 @@ echo "Ready to run CellSNP" >> ${slog}
 echo "" >> ${slog}
 
 # Change to output directory
-cd ${outdir}
+cd ${outdir}/${sample}
 
-# Run cell ranger per sample
+# Run cellSNP
 echo "  Running CellSNP on: ${sample}" >> ${slog}
 
 cellSNP -s ${bam} -b ${barcode} -O ${outsamp} -R ${vcf} -p 7 --minMAF 0.1 --minCOUNT 20
